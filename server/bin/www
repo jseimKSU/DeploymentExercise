@@ -7,6 +7,9 @@
 var app = require('../app');
 var debug = require('debug')('server:server');
 var http = require('http');
+var database = require('../config/database')
+var migrations = require('../config/migrations')
+var seeds = require('../config/seeds')
 
 /**
  * Get port from environment and store in Express.
@@ -25,9 +28,37 @@ var server = http.createServer(app);
  * Listen on provided port, on all network interfaces.
  */
 
-server.listen(port);
+// server.listen(port)
 server.on('error', onError);
 server.on('listening', onListening);
+
+// Call startup function
+startup();
+
+function startup() {
+  try {
+    // Test database connection
+    database.authenticate().then(() => {
+      console.log("Database connection successful")
+      // Run migrations
+      migrations.up().then(() => {
+        console.log("Database migrations complete")
+        if (process.env.SEED_DATA === 'true') {
+          console.log("Database data seeding is enabled!")
+          seeds.up().then(() => {
+            console.log("Database seeding complete")
+            server.listen(port)
+          })
+        } else {
+          // Listen on provided port, on all network interfaces.
+          server.listen(port)
+        }
+      })
+    })
+  } catch (error){
+    logger.error(error)
+  }
+}
 
 /**
  * Normalize a port into a number, string, or false.
