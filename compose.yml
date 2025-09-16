@@ -1,0 +1,73 @@
+services:
+  
+  ######################################
+  # Deployment Example
+  #
+  # Repository:
+  # https://github.com/cis526-codio/ex-deploy
+  example-deploy:
+    
+    # Docker Image
+    # !!TODO - Update this to match your repository !!
+    image: ghcr.io/cis526-codio/ex-deploy:latest
+
+    # Container Name
+    container_name: example-deploy
+
+    # Restart Container Unless Stopped
+    restart: unless-stopped
+
+    # Networks
+    networks:
+      - default
+      - example-deploy-network
+
+    # Network Ports
+    ports:
+      - "3000:3000"
+
+    # Environment Variables
+    environment:
+      # Seed initial data on first startup
+      SEED_DATA: 'true'
+      # Database
+      DATABASE_HOST: example-deploy-db
+      DATABASE_PORT: 5432
+      DATABASE_USERNAME: example-deploy
+      DATABASE_PASSWORD: example-deploy
+      DATABASE_NAME: example-deploy
+
+  ######################################
+  # Postgres Database
+  #
+  # Image Location:
+  # https://hub.docker.com/_/postgres
+  example-deploy-db:
+    # Docker Image
+    image: postgres:17-alpine
+
+    # Container Name
+    container_name: example-deploy-db
+
+    # Restart Container Unless Stopped
+    restart: unless-stopped
+
+    # Networks
+    networks:
+      - example-deploy-network
+
+    # Volumes
+    volumes:
+      - example-deploy-db-data:/var/lib/postgresql/data:rw
+
+    # Environment Variables
+    environment:
+      POSTGRES_USER: example-deploy
+      POSTGRES_PASSWORD: example-deploy
+      POSTGRES_DB: example-deploy
+
+volumes:
+  example-deploy-db-data:
+networks:
+  example-deploy-network:
+    internal: true
